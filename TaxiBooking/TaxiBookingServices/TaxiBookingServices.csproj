@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Messages\Request\Implementations\**" />
+    <Compile Remove="Messages\Response\Implementations\**" />
+    <EmbeddedResource Remove="Messages\Request\Implementations\**" />
+    <EmbeddedResource Remove="Messages\Response\Implementations\**" />
+    <None Remove="Messages\Request\Implementations\**" />
+    <None Remove="Messages\Response\Implementations\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TaxiBookingRepository\TaxiBookingRepository.csproj" />
+  </ItemGroup>
+
+</Project>
