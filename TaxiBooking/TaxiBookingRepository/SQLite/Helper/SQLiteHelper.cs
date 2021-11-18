@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Data.SQLite;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -12,7 +13,7 @@ namespace MDC.SQLite
 {
     public class SQLiteHelper
     {
-        private readonly static string connStr = ConfigurationManager.ConnectionStrings["mdc_db"].ConnectionString;
+        private readonly static string connStr = @"data source=.\db.db;Pooling=true;FailIfMissing=false";
 
         //get connection object
         public static IDbConnection CreateConnection()

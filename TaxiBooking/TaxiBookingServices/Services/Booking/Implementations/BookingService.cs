@@ -1,9 +1,11 @@
 ﻿using MDC.SQLite;
 using MDC.SQLite.Service;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using TaxiBookingServices.Messages.Request.Implementation;
@@ -11,6 +13,7 @@ using TaxiBookingServices.Messages.Response.Implementation;
 using TaxiBookingServices.Messages.Response.Utility;
 using TaxiBookingServices.Models;
 using TaxiBookingServices.Services.Interfaces;
+using TaxiBookingServices.Utilities;
 
 namespace TaxiBookingServices.Services.Implementations
 {
@@ -38,7 +41,19 @@ namespace TaxiBookingServices.Services.Implementations
         {
             //current location latitude and longitude information should be called in frontend
             if (request == null) return ResponseUtility.Fail(ResponseUtility.Msg_Bad_Request);
-
+            HttpResponseMessage response = HttpClientHelper.GetInstance().Get(Constants.GetCurrentPositionURL);
+            Position position = null;
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                string responseStr = response.Content.ReadAsStringAsync().Result;
+                position = JsonConvert.DeserializeObject<Position>(responseStr);
+                if(position == null)
+                    return ResponseUtility.Fail(ResponseUtility.Msg_Bad_Request);
+            }
+            else
+            {
+                return ResponseUtility.Fail(ResponseUtility.Msg_Bad_Request);
+            }
             Guid g = Guid.NewGuid();
 
             string sql = "insert into Booking values (@Id, @Date, @Time, @PickupPoint, @Destination, @Current_Location_Latitude, @Current_Location_Longitude)";
@@ -49,8 +64,8 @@ namespace TaxiBookingServices.Services.Implementations
                 {"Time", request.Time },
                 {"PickupPoint", request.PickupPoint },
                 {"Destination", request.Destination },
-                {"Current_Location_Latitude", request.Current_Location_Latitude.Value },
-                {"Current_Location_Longitude", request.Current_Location_Longitude.Value }
+                {"Current_Location_Latitude", position.latitude },
+                {"Current_Location_Longitude", position.longitude }
             };
             int count = SQLiteHelper.ExecuteNonQuery(sql, parameters);
 
@@ -118,12 +133,12 @@ namespace TaxiBookingServices.Services.Implementations
                 return ResponseUtility.Fail(ResponseUtility.Msg_No_Content);
             Booking booking = new Booking();
             booking.Id = dt.Rows[0].Field<string>("Id");
-            booking.Date = dt.Rows[0].Field<DateTime>("Date");
-            booking.Time = dt.Rows[0].Field<DateTime>("Time");
+            booking.Date = dt.Rows[0].Field<string>("Date");
+            booking.Time = dt.Rows[0].Field<string>("Time");
             booking.PickupPoint = dt.Rows[0].Field<string>("PickupPoint");
             booking.Destination = dt.Rows[0].Field<string>("Destination");
-            booking.Current_Location_Latitude = dt.Rows[0].Field<float>("Current_Location_Latitude");
-            booking.Current_Location_Longitude = dt.Rows[0].Field<float>("Current_Location_Longitude");
+            booking.Current_Location_Latitude = dt.Rows[0].Field<double>("Current_Location_Latitude");
+            booking.Current_Location_Longitude = dt.Rows[0].Field<double>("Current_Location_Longitude");
 
             return ResponseUtility.Success(booking);
         }
@@ -142,12 +157,12 @@ namespace TaxiBookingServices.Services.Implementations
             {
                 Booking booking = new Booking();
                 booking.Id = dr.Field<string>("Id");
-                booking.Date = dr.Field<DateTime>("Date");
-                booking.Time = dr.Field<DateTime>("Time");
+                booking.Date = dr.Field<string>("Date");
+                booking.Time = dr.Field<string>("Time");
                 booking.PickupPoint = dr.Field<string>("PickupPoint");
                 booking.Destination = dr.Field<string>("Destination");
-                booking.Current_Location_Latitude = dr.Field<float>("Current_Location_Latitude");
-                booking.Current_Location_Longitude = dr.Field<float>("Current_Location_Longitude");
+                booking.Current_Location_Latitude = dr.Field<double>("Current_Location_Latitude");
+                booking.Current_Location_Longitude = dr.Field<double>("Current_Location_Longitude");
                 bookingList.Add(booking);
             }
 
